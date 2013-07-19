@@ -13,7 +13,6 @@ var material;
  */
 function initScene() {
     scene = new THREE.Scene(); 
-    //var camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);  
     camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 100.0);
     camera.position.z = 5;  
     scene.add(camera);
@@ -25,25 +24,28 @@ function initScene() {
 	time: { type:"f", value:0 },
 	resolution: { type:"v2", value:new THREE.Vector2(WIDTH,HEIGHT) },
 	tex0: { type:"t", value: THREE.ImageUtils.loadTexture("polka_dot.jpg") },
-//	perlin_p: { type:"iv1", value: perlin_p },
-//	perlin_g2: { type:"fv1", value: perlin_g2 },
 	mouse: { type:"v2", value:new THREE.Vector2(0,0) },
 	mouseLeft: { type:"i", value:0 },	
 
 	tunnelCenter : { type:"v2", value: new THREE.Vector2(0.0, 0.0) },
+	creviceDepth : { type:"f", value: 0.5 },
+	creviceCount : { type:"f", value: 5.0 },
+	textureScale : { type:"f", value: 3.0 },
 
     };
     uniforms.tex0.value.wrapS = THREE.RepeatWrapping;
     uniforms.tex0.value.wrapT = THREE.RepeatWrapping;
 
     mesh = null;
-
-    //document.getElementById("glcontainer").addEventListener("keypress", reloadCurrentShader());
 }
 
 function updateTunnelCenter() {
     uniforms.tunnelCenter.value = new THREE.Vector2(document.getElementById("tunnelCx").value, 
 						    document.getElementById("tunnelCy").value);
+}
+
+function setUniformValue(name, el) {
+    uniforms[name].value = el.value;
 }
 
 function addMesh() {

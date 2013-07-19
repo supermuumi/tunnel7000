@@ -3,8 +3,8 @@
 <title>tunnel7000</title> 
 <style>
   body { background-color:0; } 
-  canvas { width: 100%; height: 100% }
-  #menu { background-color: #666666; color: white; }
+  canvas { width: 100%; height: 100%; }
+  #menu { width:640px; background-color: #666666; color: white; }
 </style> 
 
 <script id="fragmentShader" type="x-shader/x-fragment">
@@ -20,6 +20,9 @@ uniform float time;
 uniform sampler2D tex0;
 uniform vec2 tunnelCenter;
 //uniform sampler2D tex1;
+uniform float creviceDepth;
+uniform float creviceCount;
+uniform float textureScale;
 
 void main(void)
 {
@@ -32,28 +35,35 @@ void main(void)
 	);
 
     float r = sqrt(dot(p,p));
-    float a = atan(p.y,p.x); // + 0.5*sin(0.5*r-0.5*time);
+    float a = atan(p.y,p.x);// + 0.5*sin(0.5*r-0.5*time);
 
+    float x = gl_FragCoord.x;
+    float y = gl_FragCoord.y;
 
     // normal tunnel
 
     vec2 uv;
-    uv = vec2(cos(a) / r, sin(a) / r);
+    //uv = vec2(cos(a) / r, sin(a) / r);
+
+
+    uv = vec2(1.0/(r+creviceDepth*sin(creviceCount*a)), a*textureScale/pi);
     uv.y += time*0.1;
     uv.x += time*0.25;
     vec3 col1 = texture2D(tex0,uv).xyz;
 
-    uv = vec2(sin(a) / r, cos(a) / r);
+    //uv = vec2(sin(a) / r, cos(a) / r);
+    uv = vec2(1.0/(r+creviceDepth*sin(creviceCount*a)), a*3.0/pi);
     uv.y += time*0.1;
     uv.x += time*0.25;
     vec3 col2 = texture2D(tex0,uv).xyz;
 
-    // alpha blend
-    //vec3 col = mix(col1, col2, 0.5); // overlay
+    // blend two textures 
+    vec3 col = mix(col1, col2, 0.5); // normal blend
     //vec3 col = 1.0 - (1.0-col1)*(1.0-col2); // screen
-    vec3 col = col1*col2; // multiply
+    //vec3 col = col1*col2; // multiply
+    //vec3 col = length(col1) < 0.5 ? 2.0*col1*col2 : 1.0-2.0*(1.0-col1)*(1.0-col2);
 
-    gl_FragColor = vec4(col*0.5*r*r,1.0);
+    gl_FragColor = vec4(col1*0.5*r*r,1.0);
 }
 
 
@@ -76,7 +86,13 @@ void main(void)
   <div id="glcontainer" style="width:640px;height:480px;left:0px;top:0px;position:relative;"></div>
   <div id="menu">
     cx: <input id="tunnelCx" type="range" min="-2.0" max="2.0" step="0.01" value="1.5" onchange="updateTunnelCenter()" />    
-    cy: <input id="tunnelCy" type="range" min="-2.0" max="2.0" step="0.01" value="-1.5" onchange="updateTunnelCenter()" />    
+    cy: <input id="tunnelCy" type="range" min="-2.0" max="2.0" step="0.01" value="-1.5" onchange="updateTunnelCenter()" />
+    <br/>
+    depth: <input id="tunnelCreviceDepth" type="range" min="0.01" max="1.0" step="0.01" value="0.5" onchange="setUniformValue('creviceDepth',this)"/>
+    count: <input id="tunnelCreviceCount" type="range" min="1.0" max="16.0" step="1.0" value="5.0" onchange="setUniformValue('creviceCount', this)"/>
+    scale: <input id="tunnelTextureScale" type="range" min="0.1" max="16.0" step="0.05" value="3.0" onchange="setUniformValue('textureScale', this)"/>
+    <br/>
+    
   </div>
   <script src="three.min.js"></script> 
   <script src="tunnel7000.js"></script>
